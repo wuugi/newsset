@@ -116,11 +116,15 @@ export default async function DashboardPage() {
               <tbody>
                 {market.map((m) => {
                   const { text, cls } = formatChange(m.change_pct, 'pct');
+                  const isUS = ['NASDAQ', 'NYSE', 'NYSEARCA'].includes(m.exchange ?? '');
+                  const priceStr = m.price === null ? '-'
+                    : isUS ? `$${formatNumber(m.price)}`
+                    : `${formatNumber(m.price)}원`;
                   return (
                     <tr key={m.ticker}>
                       <td>{m.name}</td>
                       <td>{m.sector}</td>
-                      <td className="num">{formatNumber(m.price)}</td>
+                      <td className="num">{priceStr}</td>
                       <td className={`num ${cls}`}>{text}</td>
                     </tr>
                   );
