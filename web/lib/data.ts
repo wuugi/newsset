@@ -6,12 +6,17 @@ const MARKET_SECTOR = '전체'; // news.sector 값이 '전체'인 것 = 시장/�
 export async function getDashboardData(): Promise<DashboardData> {
   const conn = db();
 
-  const [marketRes, macroRes, newsRes, commentRes] = await Promise.all([
-    conn.execute('SELECT ticker, name, sector, exchange, price, change_pct, updated_at FROM market_data ORDER BY sector, ticker'),
-    conn.execute('SELECT metric_key, label, source, value, prev_value, change_value, change_unit, updated_at FROM macro_data'),
-    conn.execute('SELECT id, sector, title, link, source, published_at, fetched_at FROM news ORDER BY fetched_at DESC'),
-    conn.execute('SELECT summary, detail_json, created_at FROM market_comment ORDER BY created_at DESC LIMIT 1'),
-  ]);
+  let marketRes, macroRes, newsRes, commentRes;
+  try {
+    [marketRes, macroRes, newsRes, commentRes] = await Promise.all([
+      conn.execute('SELECT ticker, name, sector, exchange, price, change_pct, updated_at FROM market_data ORDER BY sector, ticker'),
+      conn.execute('SELECT metric_key, label, source, value, prev_value, change_value, change_unit, updated_at FROM macro_data'),
+      conn.execute('SELECT id, sector, title, link, source, published_at, fetched_at FROM news ORDER BY fetched_at DESC'),
+      conn.execute('SELECT summary, detail_json, created_at FROM market_comment ORDER BY created_at DESC LIMIT 1'),
+    ]);
+  } catch {
+    return { market: [], macro: [], marketNews: [], sectorNews: [], comment: null, generatedAt: new Date().toISOString() };
+  }
 
   const market = marketRes.rows as unknown as MarketRow[];
   const macro = macroRes.rows as unknown as MacroRow[];

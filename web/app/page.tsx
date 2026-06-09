@@ -2,8 +2,8 @@ import { getDashboardData, macroByKey } from '../lib/data';
 import { formatChange, formatNumber, relativeTime } from '../lib/format';
 import SectorNewsList from './components/SectorNewsList';
 
-// 30분마다 재검증 — Turso read 횟수를 절약하면서도 충분히 최신 데이터 유지
-export const revalidate = 1800;
+// 빌드 시 정적 생성 안 함 — 요청 시마다 Turso에서 실시간 조회
+export const dynamic = 'force-dynamic';
 
 function MacroRowView({ label, valueText, change, unit }: {
   label: string; valueText: string; change: number | null; unit: 'pct' | 'pp';
