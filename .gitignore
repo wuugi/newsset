@@ -1,0 +1,10 @@
+# Apps Script 파일 — ECOS API 키가 포함되어 있으므로 GitHub에 올리지 않음
+# (배포 후 Google Apps Script 에디터에 직접 붙여넣기)
+Code.gs
+
+# Next.js
+web/node_modules
+web/.next
+
+# 환경 변수
+web/.env*.local

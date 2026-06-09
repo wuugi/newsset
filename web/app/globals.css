@@ -1,0 +1,122 @@
+:root {
+  --up: #d23f31;
+  --down: #1a73e8;
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --bg: #f7f8fa;
+  --card: #ffffff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: #1f2329;
+}
+header {
+  background: #111827;
+  color: #fff;
+  padding: 20px 28px;
+}
+header h1 { margin: 0; font-size: 22px; font-weight: 700; }
+header p { margin: 4px 0 0; font-size: 13px; color: #9ca3af; }
+.layout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  padding: 24px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.card h2 { font-size: 16px; margin: 0 0 14px; display: flex; align-items: center; gap: 6px; }
+.news-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.news-item:last-child { border-bottom: none; }
+.news-item a { color: #1f2329; text-decoration: none; font-size: 14px; font-weight: 500; line-height: 1.4; }
+.news-item a:hover { color: #2563eb; }
+.news-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+td.num, th.num { text-align: right; }
+.pct-up { color: var(--up); font-weight: 600; }
+.pct-down { color: var(--down); font-weight: 600; }
+.macro-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.macro-row:last-child { border-bottom: none; }
+.macro-label { font-size: 13px; color: var(--muted); }
+.macro-value { font-size: 16px; font-weight: 700; }
+.macro-sub { font-size: 12px; margin-top: 2px; }
+.sector-section { max-width: 1280px; margin: 0 auto; padding: 0 24px 32px; }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 18px; }
+.filter-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .12s ease;
+}
+.filter-btn:hover { border-color: #c7d2fe; color: #4338ca; }
+.filter-btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+.news-list { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.news-list .news-row { display: flex; align-items: baseline; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+.news-list .news-row:last-child { border-bottom: none; }
+.news-list .news-row a { color: #1f2329; text-decoration: none; font-size: 14px; font-weight: 500; flex: 1; }
+.news-list .news-row a:hover { color: #2563eb; }
+.news-list .news-row .news-meta { white-space: nowrap; font-size: 12px; color: var(--muted); }
+.sector-tag {
+  display: inline-block;
+  font-size: 11px;
+  color: #4338ca;
+  background: #eef2ff;
+  border-radius: 4px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.empty-state { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 16px; }
+.callout { border: 1px solid #fde68a; background: #fffbeb; border-radius: 12px; padding: 16px 18px; margin-bottom: 18px; }
+.callout .callout-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #92400e; margin-bottom: 6px; }
+.callout .callout-summary { font-size: 14px; line-height: 1.6; color: #1f2329; }
+.callout details { margin-top: 10px; }
+.callout summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.callout summary::-webkit-details-marker { display: none; }
+.callout summary::after { content: '펼치기 ▾'; }
+.callout details[open] summary::after { content: '접기 ▴'; }
+.callout .callout-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #fde68a;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #4b5563;
+}
+.callout .callout-detail ul { margin: 6px 0 0; padding-left: 18px; }
+.section-title { max-width: 1280px; margin: 0 auto; padding: 0 24px; font-size: 15px; font-weight: 700; color: #374151; }

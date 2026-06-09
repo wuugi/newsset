@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우기의 포폴 모니터링</title>
+<style>
+  :root {
+    --up: #d23f31;
+    --down: #1a73e8;
+    --border: #e5e7eb;
+    --muted: #6b7280;
+    --bg: #f7f8fa;
+    --card: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: #1f2329;
+  }
+  header {
+    background: #111827;
+    color: #fff;
+    padding: 20px 28px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #9ca3af;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    padding: 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 16px;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .news-item:last-child { border-bottom: none; }
+  .news-item a {
+    color: #1f2329;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .news-item a:hover { color: #2563eb; }
+  .news-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  td.num, th.num { text-align: right; }
+  .pct-up { color: var(--up); font-weight: 600; }
+  .pct-down { color: var(--down); font-weight: 600; }
+  .macro-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .macro-row:last-child { border-bottom: none; }
+  .macro-label { font-size: 13px; color: var(--muted); }
+  .macro-value { font-size: 16px; font-weight: 700; }
+  .macro-sub { font-size: 12px; margin-top: 2px; }
+  .sector-section {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 32px;
+  }
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 18px;
+  }
+  .filter-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .12s ease;
+  }
+  .filter-btn:hover {
+    border-color: #c7d2fe;
+    color: #4338ca;
+  }
+  .filter-btn.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+  }
+  .news-list {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .news-list .news-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .news-list .news-row:last-child { border-bottom: none; }
+  .news-list .news-row a {
+    color: #1f2329;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .news-list .news-row a:hover { color: #2563eb; }
+  .news-list .news-row .news-meta {
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .sector-tag {
+    display: inline-block;
+    font-size: 11px;
+    color: #4338ca;
+    background: #eef2ff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    color: #fff;
+    background: #6366f1;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 16px;
+  }
+  .callout {
+    border: 1px solid #fde68a;
+    background: #fffbeb;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+  }
+  .callout .callout-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+  }
+  .callout .callout-summary {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2329;
+  }
+  .callout details {
+    margin-top: 10px;
+  }
+  .callout summary {
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #92400e;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .callout summary::-webkit-details-marker { display: none; }
+  .callout summary::after {
+    content: '펼치기 ▾';
+  }
+  .callout details[open] summary::after {
+    content: '접기 ▴';
+  }
+  .callout .callout-detail {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #fde68a;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #4b5563;
+  }
+  .callout .callout-detail ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+  }
+  .section-title {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #374151;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 우기의 포폴 모니터링</h1>
+  <p>2026-06-09 (월) 오전 8:00 기준 · 자동 업데이트</p>
+</header>
+
+<div class="layout">
+
+  <!-- 좌측: 주요 뉴스 -->
+  <div>
+    <div class="callout">
+      <div class="callout-title">⚠️ 오늘의 시장 코멘트</div>
+      <div class="callout-summary">
+        달러 인덱스와 미국 장단기 금리가 동반 상승하며 위험자산 변동성이 커질 수 있는 구간입니다.
+        반도체·로보틱스 등 성장주 비중이 높다면 단기 조정 가능성에 대비해 현금 비중과 분할 매수 전략을 점검하세요.
+        반면 금 가격 강세는 안전자산 선호 심리가 살아있다는 신호이니 포트폴리오 내 채권·금 비중을 활용한 변동성 완충도 고려할 만합니다.
+      </div>
+      <details>
+        <summary>상세 분석 보기</summary>
+        <div class="callout-detail">
+          이 코멘트는 아래 거시 지표와 뉴스 헤드라인을 규칙 기반으로 종합해 자동 생성되었습니다 (투자 권유가 아닌 참고용 해석입니다).
+          <ul>
+            <li><b>달러 강세 신호</b>: 달러 인덱스(DXY) 104.82(▲0.31%), 달러/원 1,389.50원(▲0.42%) 모두 상승 — 달러 강세는 외국인 자금 이탈 우려와 환차손 가능성을 동반할 수 있습니다.</li>
+            <li><b>미국 금리 동반 상승</b>: 미국 10년물(4.41%, ▲0.05%p)과 2년물(4.78%, ▲0.03%p)이 함께 오르며, "Fed Holds Rates Steady, Signals Caution on Inflation Outlook" 기사와 결합해 보면 금리 인하 기대가 후퇴하는 국면으로 해석됩니다. 금리 상승기에는 고밸류에이션 성장주(반도체·로보틱스 ETF 비중 큰 포트폴리오)가 더 민감하게 반응하는 경향이 있습니다.</li>
+            <li><b>안전자산 선호 동시 포착</b>: "글로벌 경기 둔화 우려 속 안전자산 선호 심리 확대" 기사와 함께 국제 금 시세가 ▲0.85% 상승 — 변동성 확대에 대비해 일부 자금이 금·채권으로 이동하고 있다는 신호로 볼 수 있습니다. 보유 중인 금(1kg)과 채권형 ETF(VGIT, KODEX 국고채3년 등)가 이런 국면에서 완충 역할을 할 수 있습니다.</li>
+            <li><b>한국 금리는 반대 방향</b>: 한국 국고채 3년물 금리는 소폭 하락(▼0.02%p)해 미국과 디커플링 — 환율 변동성이 커질 수 있는 요인이라 환헤지(H) 상품과 비헤지 상품의 비중을 함께 점검하는 것이 좋습니다.</li>
+          </ul>
+          <i>※ 본 코멘트는 자동 생성된 참고 의견이며, 투자 판단의 근거 자료로만 활용하고 최종 결정은 본인 책임 하에 신중히 내리시기 바랍니다.</i>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>🌐 전체 시장 / 경제 주요 뉴스</h2>
+      <div class="news-item">
+        <a href="#">Fed Holds Rates Steady, Signals Caution on Inflation Outlook</a>
+        <div class="news-meta">Reuters · 2시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">Wall Street Ends Higher as Tech Stocks Lead Rally</a>
+        <div class="news-meta">Bloomberg · 4시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">글로벌 경기 둔화 우려 속 안전자산 선호 심리 확대</a>
+        <div class="news-meta">연합뉴스 · 5시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">Dollar Weakens Against Major Currencies on Rate Cut Bets</a>
+        <div class="news-meta">WSJ · 6시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">국제유가, 중동 긴장 완화 소식에 하락 마감</a>
+        <div class="news-meta">한국경제 · 8시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">Asian Markets Mixed as Investors Weigh China Data</a>
+        <div class="news-meta">CNBC · 9시간 전</div>
+      </div>
+      <div class="news-item">
+        <a href="#">ECB Officials Hint at Possible Pause in Rate Cuts</a>
+        <div class="news-meta">FT · 11시간 전</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 우측: 환율/금 시세 + 보유 종목 -->
+  <div>
+    <div class="card">
+      <h2>💱 환율 · 달러 강세 지표</h2>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">달러 인덱스 (FRED Broad Dollar)</div>
+          <div class="macro-sub pct-up">▲ 0.31%</div>
+        </div>
+        <div class="macro-value">104.82</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">달러/원 환율 (USD/KRW)</div>
+          <div class="macro-sub pct-up">▲ 0.42%</div>
+        </div>
+        <div class="macro-value">1,389.50원</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">달러/엔 환율 (USD/JPY)</div>
+          <div class="macro-sub pct-up">▲ 0.27%</div>
+        </div>
+        <div class="macro-value">156.18엔</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">원/엔 환율 (100엔 기준, JPY/KRW)</div>
+          <div class="macro-sub pct-down">▼ 0.15%</div>
+        </div>
+        <div class="macro-value">889.74원</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📜 금리 · 국채 수익률</h2>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">한국 국고채 3년물 (BOK ECOS)</div>
+          <div class="macro-sub pct-down">▼ 0.02%p</div>
+        </div>
+        <div class="macro-value">2.84%</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">미국 10년물 국채금리 (FRED DGS10)</div>
+          <div class="macro-sub pct-up">▲ 0.05%p</div>
+        </div>
+        <div class="macro-value">4.41%</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">미국 2년물 국채금리 (FRED DGS2)</div>
+          <div class="macro-sub pct-up">▲ 0.03%p</div>
+        </div>
+        <div class="macro-value">4.78%</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🥇 금 시세</h2>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">국제 금 시세 (XAU/USD, 1oz)</div>
+          <div class="macro-sub pct-up">▲ 0.85%</div>
+        </div>
+        <div class="macro-value">$2,431.80</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">국내 금 환산가 (1g)</div>
+          <div class="macro-sub pct-up">▲ 1.27%</div>
+        </div>
+        <div class="macro-value">108,540원</div>
+      </div>
+      <div class="macro-row">
+        <div>
+          <div class="macro-label">국내 금 환산가 (1kg, 보유 수량)</div>
+          <div class="macro-sub pct-up">▲ 1.27%</div>
+        </div>
+        <div class="macro-value">108,540,000원</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📈 보유 종목 등락 요약</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>종목</th><th>섹터</th><th class="num">종가</th><th class="num">등락률</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>한국금융지주</td><td>금융/은행</td><td class="num">219,500</td><td class="num pct-up">▲ 1.85%</td></tr>
+          <tr><td>팔란티어</td><td>AI/반도체</td><td class="num">178.32</td><td class="num pct-up">▲ 3.41%</td></tr>
+          <tr><td>KODEX 미국S&P500</td><td>미국 대형 지수/ETF</td><td class="num">28,610</td><td class="num pct-up">▲ 0.44%</td></tr>
+          <tr><td>PLUS 글로벌HBM반도체</td><td>AI/반도체</td><td class="num">109,880</td><td class="num pct-down">▼ 1.12%</td></tr>
+          <tr><td>KODEX 미국휴머노이드로봇</td><td>로보틱스/휴머노이드</td><td class="num">17,920</td><td class="num pct-up">▲ 2.03%</td></tr>
+          <tr><td>UMC(ADR)</td><td>반도체 파운드리</td><td class="num">9.84</td><td class="num pct-down">▼ 0.61%</td></tr>
+          <tr><td>SOL 미국양자컴퓨팅TOP10</td><td>양자컴퓨팅</td><td class="num">35,210</td><td class="num pct-up">▲ 4.18%</td></tr>
+          <tr><td>마이크로소프트</td><td>AI/반도체</td><td class="num">478.55</td><td class="num pct-up">▲ 0.92%</td></tr>
+          <tr><td>VGIT</td><td>채권/금리</td><td class="num">59.12</td><td class="num pct-down">▼ 0.18%</td></tr>
+          <tr><td>SK네트웍스</td><td>산업재</td><td class="num">5,520</td><td class="num pct-up">▲ 0.73%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- 하단: 섹터별 뉴스 (필터 + 리스트) -->
+<div class="sector-section">
+  <div class="section-title">🏷️ 섹터별 주요 뉴스</div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" data-sector="전체">전체</button>
+    <button class="filter-btn" data-sector="AI/반도체">AI/반도체</button>
+    <button class="filter-btn" data-sector="로보틱스/휴머노이드">로보틱스/휴머노이드</button>
+    <button class="filter-btn" data-sector="채권/금리">채권/금리</button>
+    <button class="filter-btn" data-sector="제약/바이오">제약/바이오</button>
+    <button class="filter-btn" data-sector="금융/은행">금융/은행</button>
+    <button class="filter-btn" data-sector="에너지/전력 인프라">에너지/전력 인프라</button>
+    <button class="filter-btn" data-sector="양자컴퓨팅">양자컴퓨팅</button>
+    <button class="filter-btn" data-sector="소비재/산업재">소비재/산업재</button>
+    <button class="filter-btn" data-sector="미국 대형 지수/ETF">미국 대형 지수/ETF</button>
+  </div>
+
+  <div class="news-list" id="sectorNewsList">
+    <div class="news-row" data-sector="AI/반도체">
+      <span class="sector-tag">AI/반도체</span>
+      <a href="#">Nvidia Suppliers Ramp Up HBM Production Amid AI Demand Surge</a>
+      <span class="news-meta">CNBC · 2시간 전</span>
+    </div>
+    <div class="news-row" data-sector="AI/반도체">
+      <span class="sector-tag">AI/반도체</span>
+      <a href="#">팔란티어, 정부 AI 계약 확대 소식에 주가 강세</a>
+      <span class="news-meta">매일경제 · 3시간 전</span>
+    </div>
+    <div class="news-row" data-sector="AI/반도체">
+      <span class="sector-tag">AI/반도체</span>
+      <a href="#">Semiconductor Stocks Rally on Strong Earnings Guidance</a>
+      <span class="news-meta">Reuters · 5시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="로보틱스/휴머노이드">
+      <span class="sector-tag">로보틱스/휴머노이드</span>
+      <a href="#">Humanoid Robot Makers See Surge in Industrial Orders</a>
+      <span class="news-meta">Bloomberg · 3시간 전</span>
+    </div>
+    <div class="news-row" data-sector="로보틱스/휴머노이드">
+      <span class="sector-tag">로보틱스/휴머노이드</span>
+      <a href="#">중국, 휴머노이드 로봇 산업 육성 정책 발표</a>
+      <span class="news-meta">연합뉴스 · 6시간 전</span>
+    </div>
+    <div class="news-row" data-sector="로보틱스/휴머노이드">
+      <span class="sector-tag">로보틱스/휴머노이드</span>
+      <a href="#">Tesla, Honda Race to Commercialize Humanoid Robots by 2027</a>
+      <span class="news-meta">AP · 8시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="채권/금리">
+      <span class="sector-tag">채권/금리</span>
+      <a href="#">US Treasury Yields Slip as Investors Await Fed Minutes</a>
+      <span class="news-meta">WSJ · 4시간 전</span>
+    </div>
+    <div class="news-row" data-sector="채권/금리">
+      <span class="sector-tag">채권/금리</span>
+      <a href="#">한국은행, 기준금리 동결 가능성에 무게</a>
+      <span class="news-meta">한국경제 · 7시간 전</span>
+    </div>
+    <div class="news-row" data-sector="채권/금리">
+      <span class="sector-tag">채권/금리</span>
+      <a href="#">Bond Markets Brace for Volatility Ahead of Inflation Data</a>
+      <span class="news-meta">FT · 9시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="제약/바이오">
+      <span class="sector-tag">제약/바이오</span>
+      <a href="#">Eli Lilly's Weight-Loss Drug Sales Beat Expectations</a>
+      <span class="news-meta">Reuters · 5시간 전</span>
+    </div>
+    <div class="news-row" data-sector="제약/바이오">
+      <span class="sector-tag">제약/바이오</span>
+      <a href="#">글로벌 제약사, 비만 치료제 시장 경쟁 가속화</a>
+      <span class="news-meta">한국경제 · 8시간 전</span>
+    </div>
+    <div class="news-row" data-sector="제약/바이오">
+      <span class="sector-tag">제약/바이오</span>
+      <a href="#">Pharma Stocks Climb on Positive Trial Results</a>
+      <span class="news-meta">Bloomberg · 10시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="금융/은행">
+      <span class="sector-tag">금융/은행</span>
+      <a href="#">한국 금융지주사, 1분기 실적 호조 전망</a>
+      <span class="news-meta">매일경제 · 6시간 전</span>
+    </div>
+    <div class="news-row" data-sector="금융/은행">
+      <span class="sector-tag">금융/은행</span>
+      <a href="#">Banks Rally as Rate Outlook Stabilizes</a>
+      <span class="news-meta">CNBC · 9시간 전</span>
+    </div>
+    <div class="news-row" data-sector="금융/은행">
+      <span class="sector-tag">금융/은행</span>
+      <a href="#">Global Regulators Eye Tighter Capital Rules for Lenders</a>
+      <span class="news-meta">FT · 11시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="에너지/전력 인프라">
+      <span class="sector-tag">에너지/전력 인프라</span>
+      <a href="#">AI Data Centers Drive Surge in US Power Demand</a>
+      <span class="news-meta">Bloomberg · 4시간 전</span>
+    </div>
+    <div class="news-row" data-sector="에너지/전력 인프라">
+      <span class="sector-tag">에너지/전력 인프라</span>
+      <a href="#">전력 인프라 투자 확대, 관련주 강세</a>
+      <span class="news-meta">한국경제 · 7시간 전</span>
+    </div>
+    <div class="news-row" data-sector="에너지/전력 인프라">
+      <span class="sector-tag">에너지/전력 인프라</span>
+      <a href="#">Utilities Stocks Gain on Grid Modernization Push</a>
+      <span class="news-meta">Reuters · 10시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="양자컴퓨팅">
+      <span class="sector-tag">양자컴퓨팅</span>
+      <a href="#">Quantum Computing Stocks Surge on Breakthrough Reports</a>
+      <span class="news-meta">CNBC · 3시간 전</span>
+    </div>
+    <div class="news-row" data-sector="양자컴퓨팅">
+      <span class="sector-tag">양자컴퓨팅</span>
+      <a href="#">IonQ, Rigetti Lead Quantum Sector Rally</a>
+      <span class="news-meta">Reuters · 6시간 전</span>
+    </div>
+    <div class="news-row" data-sector="양자컴퓨팅">
+      <span class="sector-tag">양자컴퓨팅</span>
+      <a href="#">양자컴퓨팅 ETF, 연초 이후 200% 상승</a>
+      <span class="news-meta">매일경제 · 9시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="소비재/산업재">
+      <span class="sector-tag">소비재/산업재</span>
+      <a href="#">Mastercard, Kimberly-Clark Post Steady Quarterly Growth</a>
+      <span class="news-meta">WSJ · 5시간 전</span>
+    </div>
+    <div class="news-row" data-sector="소비재/산업재">
+      <span class="sector-tag">소비재/산업재</span>
+      <a href="#">Industrial Sector Sees Demand Pickup on Infrastructure Spend</a>
+      <span class="news-meta">Reuters · 8시간 전</span>
+    </div>
+    <div class="news-row" data-sector="소비재/산업재">
+      <span class="sector-tag">소비재/산업재</span>
+      <a href="#">SK네트웍스, 신사업 확장 발표 후 주가 상승</a>
+      <span class="news-meta">한국경제 · 10시간 전</span>
+    </div>
+
+    <div class="news-row" data-sector="미국 대형 지수/ETF">
+      <span class="sector-tag">미국 대형 지수/ETF</span>
+      <a href="#">S&P 500, Nasdaq Hit Fresh Highs on Tech Earnings</a>
+      <span class="news-meta">Bloomberg · 3시간 전</span>
+    </div>
+    <div class="news-row" data-sector="미국 대형 지수/ETF">
+      <span class="sector-tag">미국 대형 지수/ETF</span>
+      <a href="#">미국 증시, 금리 인하 기대감에 상승 마감</a>
+      <span class="news-meta">연합뉴스 · 6시간 전</span>
+    </div>
+    <div class="news-row" data-sector="미국 대형 지수/ETF">
+      <span class="sector-tag">미국 대형 지수/ETF</span>
+      <a href="#">Dow Dividend Stocks Outperform Amid Volatility</a>
+      <span class="news-meta">CNBC · 9시간 전</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  const filterBar = document.getElementById('filterBar');
+  const newsRows = document.querySelectorAll('#sectorNewsList .news-row');
+  filterBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    filterBar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const sector = btn.dataset.sector;
+    newsRows.forEach(row => {
+      row.style.display = (sector === '전체' || row.dataset.sector === sector) ? 'flex' : 'none';
+    });
+  });
+</script>
+
+<footer>
+  자동 생성된 페이지입니다 · 가격/환율/금 시세: Google Finance · 뉴스: Google News RSS (공신력 있는 출처로 필터링) · 데이터는 가상(Mock) 예시입니다
+</footer>
+
+</body>
+</html>
