@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { InValue } from '@libsql/client';
 import { db } from '../../../lib/db';
 
 type IngestPayload = {
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const conn = db();
   const now = new Date().toISOString();
-  const batch: { sql: string; args: unknown[] }[] = [];
+  const batch: { sql: string; args: InValue[] }[] = [];
 
   for (const m of body.marketData ?? []) {
     batch.push({
