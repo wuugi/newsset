@@ -77,6 +77,12 @@ export default async function DashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* 섹터별 뉴스 — 좌측 하단 */}
+          <div className="card" style={{ padding: '18px 20px' }}>
+            <h2>🏷️ 섹터별 주요 뉴스</h2>
+            <SectorNewsList news={sectorNews} />
+          </div>
         </div>
 
         {/* 우측: 환율/금리/금 시세 + 보유 종목 */}
@@ -133,12 +139,6 @@ export default async function DashboardPage() {
             </table>
           </div>
         </div>
-      </div>
-
-      {/* 하단: 섹터별 뉴스 (필터 + 리스트) */}
-      <div className="sector-section">
-        <div className="section-title">🏷️ 섹터별 주요 뉴스</div>
-        <SectorNewsList news={sectorNews} />
       </div>
 
       <footer>
