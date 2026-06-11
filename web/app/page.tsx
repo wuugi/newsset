@@ -42,7 +42,7 @@ export default async function DashboardPage() {
     <>
       <header>
         <h1>📊 우기의 포폴 모니터링</h1>
-        <p>{lastUpdated ? `${new Date(lastUpdated).toLocaleString('ko-KR')} 기준 · 자동 업데이트` : '데이터 준비 중'}</p>
+        <p>{lastUpdated ? `${new Date(lastUpdated).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })} 기준 · 자동 업데이트` : '데이터 준비 중'}</p>
       </header>
 
       <div className="layout">
