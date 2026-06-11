@@ -4,6 +4,7 @@ import SectorNewsList from './components/SectorNewsList';
 
 // 빌드 시 정적 생성 안 함 — 요청 시마다 Turso에서 실시간 조회
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 function MacroRowView({ label, valueText, change, unit }: {
   label: string; valueText: string; change: number | null; unit: 'pct' | 'pp';
