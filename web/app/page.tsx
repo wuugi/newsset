@@ -124,8 +124,10 @@ export default async function DashboardPage() {
                 {market.map((m) => {
                   const { text, cls } = formatChange(m.change_pct, 'pct');
                   const isUS = ['NASDAQ', 'NYSE', 'NYSEARCA'].includes(m.exchange ?? '');
+                  const isJP = m.exchange === 'TYO';
                   const priceStr = m.price === null ? '-'
                     : isUS ? `$${formatNumber(m.price)}`
+                    : isJP ? `${formatNumber(m.price)}엔`
                     : `${formatNumber(m.price)}원`;
                   return (
                     <tr key={m.ticker}>
